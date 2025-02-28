@@ -2,13 +2,16 @@ import React, { useState, useEffect } from "react";
 import "./ProductList.css";
 import CartItem from "./CartItem";
 import { addItem } from "./CartSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 function ProductList() {
   const [showCart, setShowCart] = useState(false);
   const [showPlants, setShowPlants] = useState(false); // State to control the visibility of the About Us page
   const [addedToCart, setAddedToCart] = useState({});
+  const dispatch = useDispatch();
 
-
+  //   Get the Items from the Cart
+  const cart = useSelector((state) => state.cart.items);
   const plantsArray = [
     {
       category: "Air Purifying Plants",
@@ -220,6 +223,7 @@ function ProductList() {
       ],
     },
   ];
+
   const styleObj = {
     backgroundColor: "#4CAF50",
     color: "#fff!important",
@@ -258,9 +262,9 @@ function ProductList() {
   const handleAddToCart = (product) => {
     dispatch(addItem(product));
     setAddedToCart((prevState) => ({
-       ...prevState,
-       [product.name]: true, // Set the product name as key and value as true to indicate it's added to cart
-     }));
+      ...prevState,
+      [product.name]: true, // Set the product name as key and value as true to indicate it's added to cart
+    }));
   };
 
   return (
@@ -302,6 +306,8 @@ function ProductList() {
                     id="mainIconPathAttribute"
                   ></path>
                 </svg>
+                {/* Added the Quantity of the Cart */}
+                <div className="cart_quantity_count">{cart.length}</div>
               </h1>
             </a>
           </div>
@@ -309,21 +315,28 @@ function ProductList() {
       </div>
       {!showCart ? (
         <div className="product-grid">
-          {plantsArray.map((group) => (
-            <>
-              <h1 className="plant_heading"><div>{group.category}</div></h1>
+          {plantsArray.map((category, index) => (
+            <div key={index}>
+              <div className="plantname_heading">
+                <h1 className="plant_heading">{category.category}</h1>
+              </div>
               <div className="product-list">
-                {group.plants.map((plant) => (
-                  <div className="product-card">
+                {category.plants.map((plant, plantIndex) => (
+                  <div className="product-card" key={plantIndex}>
                     <p className="product-title">{plant.name}</p>
-                    <img className="product-image" src={plant.image} />
+                    <img className="product-image" src={plant.image} alt={plant.name} />
                     <div className="product-price">{plant.cost}</div>
                     <div>{plant.description}</div>
-                    <button className="product-button" onClick={handleAddToCart}>Add to Cart</button>
+                    <button
+                      className={cart.find((item) => item.name == plant.name) ? "product-button added-to-cart" : "product-button"}
+                      onClick={() => handleAddToCart(plant)}
+                    >
+                      {cart.find((item) => item.name == plant.name) ? "Added" : "Add"} to Cart
+                    </button>
                   </div>
                 ))}
               </div>
-            </>
+            </div>
           ))}
         </div>
       ) : (
